@@ -4,7 +4,7 @@
  * @file
  * Countdown timer field module allows you to create countdown timer
  * field to count the days, hours, minutes, and seconds until a specified
- * event. 
+ * event.
  */
 
 /**
@@ -173,14 +173,14 @@ function field_countdown_field_formatter_view($entity_type, $entity, $field, $in
     case 'field_countdown_default':
       foreach ($items as $delta => $item) {
         $element[$delta]['#markup'] = _field_countdown_display_timer(
-            check_plain($item['countdown_timer']), FALSE, $instance['widget']['settings']['font_size'], $delta);
+            check_plain($item['countdown_timer']), $instance['widget']['settings']['font_size'], $delta, FALSE);
       }
       break;
 
     case 'field_countdown_with_text_timer':
       foreach ($items as $delta => $item) {
         $element[$delta]['#markup'] = _field_countdown_display_timer(
-            check_plain($item['countdown_timer']), TRUE, $instance['widget']['settings']['font_size'], $delta);
+            check_plain($item['countdown_timer']), $instance['widget']['settings']['font_size'], $delta, TRUE);
       }
       break;
       
@@ -204,12 +204,12 @@ function field_countdown_field_formatter_view($entity_type, $entity, $field, $in
 }
 
 /**
- * creates the jquery countdown timer.
+ * Creates the jquery countdown timer.
  */
-function _field_countdown_display_timer($time, $text_timer = FALSE, $font_size, $delta) {
+function _field_countdown_display_timer($time, $font_size, $delta, $text_timer = FALSE) {
   $path = libraries_get_path('jquery-countdown');
   drupal_add_js($path . '/assets/countdown/jquery.countdown.js', array(
-    'type' => 'file', 'scope' => 'footer'
+    'type' => 'file', 'scope' => 'footer',
       )
   );
   $js = "var note = jQuery('#field-countdown-timer-note-" . $delta . "')
@@ -250,7 +250,7 @@ function _field_countdown_display_timer($time, $text_timer = FALSE, $font_size, 
 
   $content = theme('field_countdown_timer', array(
     'text_timer' => $text_timer,
-    'delta' => $delta
+    'delta' => $delta,
       )
   );
 
@@ -259,9 +259,11 @@ function _field_countdown_display_timer($time, $text_timer = FALSE, $font_size, 
 
 /**
  * Returns HTML for the timer container.
- * 
+ *
  * @param type $variables
- * @return string 
+ *   The $variables array.
+ * @return string
+ * The html content for timer.
  */
 function theme_field_countdown_timer($variables) {
   $output = '';
