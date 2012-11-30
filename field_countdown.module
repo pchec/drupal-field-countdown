@@ -183,7 +183,7 @@ function field_countdown_field_formatter_view($entity_type, $entity, $field, $in
             check_plain($item['countdown_timer']), $instance['widget']['settings']['font_size'], $delta, TRUE);
       }
       break;
-      
+
     case 'field_countdown_plain':
       foreach ($items as $delta => $item) {
         $element[$delta]['#markup'] = date('Y-m-d H:i', check_plain(
@@ -191,13 +191,13 @@ function field_countdown_field_formatter_view($entity_type, $entity, $field, $in
         );
       }
       break;
-      
+
     case 'field_countdown_integer':
       foreach ($items as $delta => $item) {
         $element[$delta]['#markup'] = check_plain($item['countdown_timer']);
       }
       break;
-      
+
   }
 
   return $element;
@@ -259,11 +259,7 @@ function _field_countdown_display_timer($time, $font_size, $delta, $text_timer =
 
 /**
  * Returns HTML for the timer container.
- *
- * @param type $variables
- *   The $variables array.
- * @return string
- * The html content for timer.
+ * 
  */
 function theme_field_countdown_timer($variables) {
   $output = '';
