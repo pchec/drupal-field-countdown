@@ -258,8 +258,7 @@ function _field_countdown_display_timer($time, $font_size, $delta, $text_timer =
 }
 
 /**
- * Returns HTML for the timer container.
- * 
+ * Returns HTML for the timer container. 
  */
 function theme_field_countdown_timer($variables) {
   $output = '';
