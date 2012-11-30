@@ -1,6 +1,13 @@
 <?php
 
 /**
+ * @file
+ * Countdown timer field module allows you to create countdown timer
+ * field to count the days, hours, minutes, and seconds until a specified
+ * event. 
+ */
+
+/**
  * Implements hook_field_info().
  */
 function field_countdown_field_info() {
@@ -27,7 +34,7 @@ function field_countdown_field_widget_info() {
 }
 
 /**
- * Implementation of hook_field_widget_form().
+ * Implements hook_field_widget_form().
  */
 function field_countdown_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $base = $element;
@@ -46,7 +53,7 @@ function field_countdown_field_widget_form(&$form, &$form_state, $field, $instan
     '#date_year_range' => '-3:+3',
     '#description' => $element['#description'],
     '#default_value' => isset($items[$delta]['countdown_timer']) ?
-        date('Y-m-d H:i', $items[$delta]['countdown_timer']) : NULL,
+    date('Y-m-d H:i', $items[$delta]['countdown_timer']) : NULL,
     '#attributes' => array('class' => array('countdown_timer_field')),
   );
 
@@ -79,7 +86,7 @@ function field_countdown_field_validate($entity_type, $entity, $field, $instance
   foreach ($items as $delta => $value) {
     if (!empty($value['countdown_timer'])) {
       $entered_time = strtotime($value['countdown_timer']);
-      if ($entered_time <= time()) {        
+      if ($entered_time <= time()) {
         $errors[$field['field_name']][$langcode][$delta][] = array(
           'error' => 'value',
           'message' => t("The date and time should greater than current 
@@ -103,14 +110,14 @@ function field_countdown_field_is_empty($item, $field) {
  */
 function field_countdown_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
   foreach ($items as $delta => $value) {
-    _field_countdown_process($items[$delta], $delta, $field, $entity);
+    _field_countdown_process($items[$delta], $field, $entity, $delta);
   }
 }
 
 /**
  * Prepares the item data for storage.
  */
-function _field_countdown_process(&$item, $delta = 0, $field, $entity) {
+function _field_countdown_process(&$item, $field, $entity, $delta = 0) {
   $nid = NULL;
   if ($item['countdown_timer']) {
     $item['countdown_timer'] = strtotime(check_plain($item['countdown_timer']));
@@ -152,7 +159,7 @@ function field_countdown_theme() {
   return array(
     'field_countdown_timer' => array(
       'variables' => array(),
-    )
+    ),
   );
 }
 
@@ -176,6 +183,7 @@ function field_countdown_field_formatter_view($entity_type, $entity, $field, $in
             check_plain($item['countdown_timer']), TRUE, $instance['widget']['settings']['font_size'], $delta);
       }
       break;
+      
     case 'field_countdown_plain':
       foreach ($items as $delta => $item) {
         $element[$delta]['#markup'] = date('Y-m-d H:i', check_plain(
@@ -183,11 +191,13 @@ function field_countdown_field_formatter_view($entity_type, $entity, $field, $in
         );
       }
       break;
+      
     case 'field_countdown_integer':
       foreach ($items as $delta => $item) {
         $element[$delta]['#markup'] = check_plain($item['countdown_timer']);
       }
       break;
+      
   }
 
   return $element;
