@@ -25,6 +25,9 @@ function field_countdown_field_schema($field) {
  * Implements hook_requirements().
  */
 function field_countdown_requirements($phase) {
+  if (!module_exists('libraries')) {
+    module_enable(array('libraries'));
+  }
   $requirements = array();
   $t = get_t();
   if ($phase == 'install') {
@@ -36,8 +39,8 @@ function field_countdown_requirements($phase) {
     if ($path && file_exists($path . '/assets/countdown/jquery.countdown.js')) {
       $requirements['field_countdown']['value'] = $t('The jQuery Countdown 
         Timer Library is installed at <code>!path</code>', array(
-          '!path' => $path,
-        )
+        '!path' => $path,
+          )
       );
     }
     else {
@@ -48,8 +51,8 @@ function field_countdown_requirements($phase) {
         should be available at a path like 
         <code>sites/all/libraries/jquery-countdown/assets/countdown/
         jquery.countdown.js</code>', array(
-          '!url' => 'http://tutorialzine.com/2011/12/countdown-jquery/',
-        )
+        '!url' => 'http://tutorialzine.com/2011/12/countdown-jquery/',
+          )
       );
       $requirements['field_countdown']['severity'] = REQUIREMENT_ERROR;
       $requirements['field_countdown']['value'] = $t('Not found');

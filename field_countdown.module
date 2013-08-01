@@ -45,16 +45,24 @@ function field_countdown_field_widget_form(&$form, &$form_state, $field, $instan
   $element['#attached']['css'] = array(
     drupal_get_path('module', 'field_countdown') . '/css/field_countdown.css',
   );
-
+  $default_date = NULL;
+  if (isset($items[$delta]['countdown_timer'])) {
+    if (is_numeric($items[$delta]['countdown_timer'])) {
+      $default_date = date('Y-m-d H:i', $items[$delta]['countdown_timer']);
+    }
+    else {
+      $default_date = $items[$delta]['countdown_timer'];
+    }
+  }
   $element['countdown_timer'] = array(
     '#type' => 'date_popup',
-    '#title' => $element['#title'],
+    '#title' => check_plain($element['#title']),
     '#date_format' => 'Y-m-d H:i',
     '#date_year_range' => '-3:+3',
-    '#description' => $element['#description'],
-    '#default_value' => isset($items[$delta]['countdown_timer']) ?
-        date('Y-m-d H:i', $items[$delta]['countdown_timer']) : NULL,
+    '#description' => check_plain($element['#description']),
+    '#default_value' => $default_date,
     '#attributes' => array('class' => array('countdown_timer_field')),
+    '#required' => isset($element['#required']) ? $element['#required'] : FALSE,
   );
 
   return $element;
@@ -85,13 +93,15 @@ function field_countdown_field_widget_settings_form($field, $instance) {
 function field_countdown_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   foreach ($items as $delta => $value) {
     if (!empty($value['countdown_timer'])) {
-      $entered_time = strtotime($value['countdown_timer']);
-      if ($entered_time <= time()) {
-        $errors[$field['field_name']][$langcode][$delta][] = array(
-          'error' => 'value',
-          'message' => t("The date and time should greater than current 
+      if (!is_array($value['countdown_timer'])) {
+        $entered_time = strtotime($value['countdown_timer']);
+        if ($entered_time <= time()) {
+          $errors[$field['field_name']][$langcode][$delta][] = array(
+            'error' => 'value',
+            'message' => t("The date and time should greater than current 
             date and time."),
-        );
+          );
+        }
       }
     }
   }
@@ -101,15 +111,14 @@ function field_countdown_field_validate($entity_type, $entity, $field, $instance
  * Implements hook_field_is_empty().
  */
 function field_countdown_field_is_empty($item, $field) {
-
-  return empty($item['countdown_timer']);
+  return false;
 }
 
 /**
  * Implements hook_field_presave().
  */
 function field_countdown_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
-  foreach ($items as $delta => $value) {
+  foreach ($items as $delta => $value) {    
     _field_countdown_process($items[$delta], $field, $entity, $delta);
   }
 }
@@ -120,7 +129,9 @@ function field_countdown_field_presave($entity_type, $entity, $field, $instance,
 function _field_countdown_process(&$item, $field, $entity, $delta = 0) {
   $nid = NULL;
   if ($item['countdown_timer']) {
-    $item['countdown_timer'] = strtotime(check_plain($item['countdown_timer']));
+    if (!is_numeric($item['countdown_timer'])) {
+      $item['countdown_timer'] = strtotime(check_plain($item['countdown_timer']));
+    }
   }
 }
 
@@ -168,13 +179,17 @@ function field_countdown_theme() {
  */
 function field_countdown_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
-
+  $countdown_field_count = &drupal_static(__FUNCTION__);
+  if (empty($countdown_field_count)) {
+    $countdown_field_count = 0;
+  }
   switch ($display['type']) {
     case 'field_countdown_default':
       foreach ($items as $delta => $item) {
         if (time() < $item['countdown_timer']) {
           $element[$delta]['#markup'] = _field_countdown_display_timer(
-              check_plain($item['countdown_timer']), $instance['widget']['settings']['font_size'], $delta, FALSE);
+              check_plain($item['countdown_timer']), $instance['widget']['settings']['font_size'], $countdown_field_count, FALSE);
+          $countdown_field_count++;
         }
       }
       break;
@@ -183,7 +198,8 @@ function field_countdown_field_formatter_view($entity_type, $entity, $field, $in
       foreach ($items as $delta => $item) {
         if (time() < $item['countdown_timer']) {
           $element[$delta]['#markup'] = _field_countdown_display_timer(
-              check_plain($item['countdown_timer']), $instance['widget']['settings']['font_size'], $delta, TRUE);
+              check_plain($item['countdown_timer']), $instance['widget']['settings']['font_size'], $countdown_field_count, TRUE);
+          $countdown_field_count++;
         }
       }
       break;
@@ -209,44 +225,22 @@ function field_countdown_field_formatter_view($entity_type, $entity, $field, $in
 /**
  * Creates the jquery countdown timer.
  */
-function _field_countdown_display_timer($time, $font_size, $delta, $text_timer = FALSE) {
+function _field_countdown_display_timer($time, $font_size, $countdown_field_count, $text_timer = FALSE) {
   $path = libraries_get_path('jquery-countdown');
   drupal_add_js($path . '/assets/countdown/jquery.countdown.js', array(
     'type' => 'file', 'scope' => 'footer',
       )
   );
   $suffix = str_replace(array('.', ' '), array('-', '-'), microtime());
-  $js = "var note = jQuery('#field-countdown-timer-note-" . $suffix . "')
-    ts = new Date(" . $time . " * 1000)
-     jQuery('#field-countdown-timer-" . $suffix . "').
-       not('.jquery-countdown-timer-processed')
-       .addClass('jquery-countdown-timer-processed').countdown({
-        timestamp : ts,
-        callback : function(days, hours, minutes, seconds){
-          var date_time_str = new Array();
-          date_time_str['@days'] = Drupal.formatPlural(
-          days, '1 day', '@count days'
-          );
-          date_time_str['@hours'] = Drupal.formatPlural(
-          hours, '1 hour', '@count hours'
-          );
-          date_time_str['@minutes'] = Drupal.formatPlural(
-          minutes, '1 minute', '@count minutes'
-          );
-          date_time_str['@seconds'] = Drupal.formatPlural(
-          seconds, '1 second', '@count seconds'
-          );
-          var message = Drupal.t(
-          '@days, @hours, @minutes and @seconds left', 
-          date_time_str
-          );         
-          note.html(message);
-        }
-      });";
-  drupal_add_js('jQuery(document).ready(function () { ' . $js . ' });', array(
-    'type' => 'inline', 'scope' => 'footer', 'weight' => 5,
-      )
-  );
+  $settings = array('coundownSetting' . $countdown_field_count => array(
+      'coundownSetting_suffix' => $suffix,
+      'coundownSetting_time' => $time,
+  ));
+  drupal_add_js(array('field_countdown' => $settings), 'setting');
+  drupal_add_js(drupal_get_path('module', 'field_countdown') . '/field_countdown.js', array(
+    'scope' => 'footer', 'weight' => 5,
+  ));
+
   drupal_add_css($path . '/assets/countdown/jquery.countdown.css');
   drupal_add_css(
       '.countdownHolder {font-size: ' . $font_size . 'px}', 'inline'
