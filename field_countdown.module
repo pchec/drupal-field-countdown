@@ -237,7 +237,7 @@ function _field_countdown_display_timer($time, $font_size, $countdown_field_coun
       'coundownSetting_suffix' => $suffix,
       'coundownSetting_time' => $time,
     ),
-    );
+  );
   drupal_add_js(array('field_countdown' => $settings), 'setting');
   drupal_add_js(drupal_get_path('module', 'field_countdown') . '/field_countdown.js', array(
     'scope' => 'footer', 'weight' => 5,
