@@ -39,7 +39,7 @@ function field_countdown_requirements($phase) {
     if ($path && file_exists($path . '/assets/countdown/jquery.countdown.js')) {
       $requirements['field_countdown']['value'] = $t('The jQuery Countdown 
         Timer Library is installed at <code>!path</code>', array(
-        '!path' => $path,
+          '!path' => $path,
         )
       );
     }
@@ -51,7 +51,7 @@ function field_countdown_requirements($phase) {
         should be available at a path like 
         <code>sites/all/libraries/jquery-countdown/assets/countdown/
         jquery.countdown.js</code>', array(
-        '!url' => 'http://tutorialzine.com/2011/12/countdown-jquery/',
+          '!url' => 'http://tutorialzine.com/2011/12/countdown-jquery/',
         )
       );
       $requirements['field_countdown']['severity'] = REQUIREMENT_ERROR;
