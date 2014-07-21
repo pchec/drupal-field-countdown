@@ -279,3 +279,38 @@ function theme_field_countdown_timer($variables) {
 
   return $output;
 }
+
+/**
+ * Implements hook_views_api()
+ */
+function field_countdown_views_api() {
+  return array(
+    'api' => 3,
+  );
+}
+
+/**
+ * Implements hook_views_data_alter()
+ */
+function field_countdown_views_data_alter(&$data) {
+  foreach ($data as $table => $config) {
+    foreach ($config as $item => $item_config) {
+      $field = field_info_field($item);
+
+      if ($field['type'] == "field_countdown") {
+        $storage_details = $field['storage']['details']['sql']['FIELD_LOAD_CURRENT'];
+
+        if ($storage_details) {
+          foreach ($storage_details as $table => $value) {
+            foreach ($value as $column) {
+              $data[$table][$column]['filter'] = array(
+                'handler' => 'views_handler_filter_date',
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+  return $data;
+}
