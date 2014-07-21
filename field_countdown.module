@@ -139,6 +139,11 @@ function field_countdown_field_formatter_info() {
       'field types' => array('field_countdown'),
       'multiple values' => FIELD_BEHAVIOR_DEFAULT,
     ),
+    'field_countdown_text_timer_only' => array(
+      'label' => t('jQuery Countdown Timer text only'),
+      'field types' => array('field_countdown'),
+      'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+    ),
     'field_countdown_plain' => array(
       'label' => t('Date and time as string'),
       'field types' => array('field_countdown'),
@@ -174,8 +179,12 @@ function field_countdown_field_formatter_view($entity_type, $entity, $field, $in
       foreach ($items as $delta => $item) {
         if (time() < $item['countdown_timer']) {
           $element[$delta]['#markup'] = _field_countdown_display_timer(
-              check_plain($item['countdown_timer']), $instance['widget']['settings']['font_size'], $delta, FALSE);
-        }
+              check_plain($item['countdown_timer']), $instance['widget']['settings']['font_size'], $delta, TRUE, FALSE);
+        } else {
+		  $element[$delta]['#markup'] = date('Y-m-d H:i', check_plain(
+              $item['countdown_timer'])
+		  );
+		}
       }
       break;
 
@@ -183,8 +192,25 @@ function field_countdown_field_formatter_view($entity_type, $entity, $field, $in
       foreach ($items as $delta => $item) {
         if (time() < $item['countdown_timer']) {
           $element[$delta]['#markup'] = _field_countdown_display_timer(
-              check_plain($item['countdown_timer']), $instance['widget']['settings']['font_size'], $delta, TRUE);
-        }
+              check_plain($item['countdown_timer']), $instance['widget']['settings']['font_size'], $delta, TRUE, TRUE);
+        } else {
+		  $element[$delta]['#markup'] = date('Y-m-d H:i', check_plain(
+              $item['countdown_timer'])
+		  );
+		}
+      }
+      break;
+
+    case 'field_countdown_text_timer_only':
+      foreach ($items as $delta => $item) {
+        if (time() < $item['countdown_timer']) {
+          $element[$delta]['#markup'] = _field_countdown_display_timer(
+              check_plain($item['countdown_timer']), $instance['widget']['settings']['font_size'], $delta, FALSE, TRUE);
+        } else {
+		  $element[$delta]['#markup'] = date('Y-m-d H:i', check_plain(
+              $item['countdown_timer'])
+		  );
+		}
       }
       break;
 
@@ -209,7 +235,7 @@ function field_countdown_field_formatter_view($entity_type, $entity, $field, $in
 /**
  * Creates the jquery countdown timer.
  */
-function _field_countdown_display_timer($time, $font_size, $delta, $text_timer = FALSE) {
+function _field_countdown_display_timer($time, $font_size, $delta, $jquery_timer = TRUE, $text_timer = FALSE) {
   $path = libraries_get_path('jquery-countdown');
   drupal_add_js($path . '/assets/countdown/jquery.countdown.js', array(
     'type' => 'file', 'scope' => 'footer',
@@ -253,6 +279,7 @@ function _field_countdown_display_timer($time, $font_size, $delta, $text_timer =
   );
 
   $content = theme('field_countdown_timer', array(
+	'jquery_timer' => $jquery_timer,
     'text_timer' => $text_timer,
     'suffix' => $suffix,
       )
@@ -266,8 +293,15 @@ function _field_countdown_display_timer($time, $font_size, $delta, $text_timer =
  */
 function theme_field_countdown_timer($variables) {
   $output = '';
-  $output .= "<div id='field-countdown-timer-" . $variables['suffix'] . "'>
-    </div>";
+  if ($variables['jquery_timer']) {
+    $output .= "<div id='field-countdown-timer-" . $variables['suffix'] . "'>
+	  </div>";
+  }
+  else {
+    $output .= "<div style='display:none;' id='field-countdown-timer-" . $variables['suffix'] . "'>
+	  </div>";
+  }
+  
   if ($variables['text_timer']) {
     $output .= "<div id='field-countdown-timer-note-" . $variables['suffix'] .
         "'></div>";
