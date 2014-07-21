@@ -294,21 +294,21 @@ function _field_countdown_display_timer($time, $font_size, $delta, $jquery_timer
 function theme_field_countdown_timer($variables) {
   $output = '';
   if ($variables['jquery_timer']) {
-    $output .= "<div id='field-countdown-timer-" . $variables['suffix'] . "'>
-	  </div>";
+    $output .= "<span id='field-countdown-timer-" . $variables['suffix'] . "'>
+	  </span>";
   }
   else {
-    $output .= "<div style='display:none;' id='field-countdown-timer-" . $variables['suffix'] . "'>
-	  </div>";
+    $output .= "<span style='display:none;' id='field-countdown-timer-" . $variables['suffix'] . "'>
+	  </span>";
   }
   
   if ($variables['text_timer']) {
-    $output .= "<div id='field-countdown-timer-note-" . $variables['suffix'] .
-        "'></div>";
+    $output .= "<span id='field-countdown-timer-note-" . $variables['suffix'] .
+        "'></span>";
   }
   else {
-    $output .= "<div style='display:none;' id='field-countdown-timer-note-" .
-        $variables['suffix'] . "'></div>";
+    $output .= "<span style='display:none;' id='field-countdown-timer-note-" .
+        $variables['suffix'] . "'></span>";
   }
 
   return $output;
